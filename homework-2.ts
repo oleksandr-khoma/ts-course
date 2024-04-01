@@ -169,7 +169,7 @@ class Group {
     }
   }
 
-  setStatus(status: string): void {
+  set status(status: string) {
     this._status = status;
   }
 
@@ -206,7 +206,7 @@ class Student {
     return new Date().getFullYear() - this._birthYear;
   }
 
-  setGrade(grade: { workName: string; mark: number }): void {
+  set grade(grade: { workName: string; mark: number }) {
     this._grades.push(grade);
   }
 
