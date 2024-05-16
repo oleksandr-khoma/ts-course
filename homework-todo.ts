@@ -1,10 +1,12 @@
+type SortBy = 'status' | 'createdAt';
+
 interface INote {
     title: string;
     content: string;
     createdAt: Date;
     updatedAt: Date;
     completed: boolean;
-    requiresConfirmation: boolean;
+    requiresConfirmation?: boolean;
     edit(title: string, content: string): void;
     markAsCompleted(): void;
 }
@@ -15,7 +17,7 @@ class Note implements INote {
     createdAt: Date;
     updatedAt: Date;
     completed: boolean;
-    requiresConfirmation: boolean;
+    requiresConfirmation?: boolean;
 
     constructor(title: string, content: string, requiresConfirmation: boolean = false) {
         if (!title || !content) {
@@ -29,7 +31,7 @@ class Note implements INote {
         this.requiresConfirmation = requiresConfirmation;
     }
 
-    edit(title: string, content: string) {
+    edit(title: string, content: string): void {
         if (this.requiresConfirmation) {
             const confirmed = confirm('Are you sure you want to edit this note?');
             if (!confirmed) {
@@ -41,51 +43,59 @@ class Note implements INote {
         this.updatedAt = new Date();
     }
 
-    markAsCompleted() {
+    markAsCompleted(): void {
         this.completed = true;
     }
 }
 
 interface ITodoList {
     notes: INote[];
-    add(note: INote): void;
+    add(title: string, content: string, requiresConfirmation?: boolean): void;
     remove(note: INote): void;
     get(id: number): INote | undefined;
     getStats(): { total: number; completed: number; remaining: number };
-    search(query: string): INote[];
-    sort(by: 'status' | 'createdAt'): INote[];
+    markAllAsCompleted(): void;
 }
 
 class TodoList implements ITodoList {
     notes: Note[] = [];
 
-    add(note: Note) {
+    add(title: string, content: string, requiresConfirmation: boolean = false): void {
+        const note = new Note(title, content, requiresConfirmation);
         this.notes.push(note);
     }
 
-    remove(note: Note) {
+    remove(note: Note): void {
         const index = this.notes.indexOf(note);
         if (index !== -1) {
             this.notes.splice(index, 1);
         }
     }
 
-    get(id: number) {
+    get(id: number): INote | undefined {
         return this.notes[id];
     }
 
-    getStats() {
+    getStats(): { total: number; completed: number; remaining: number } {
         const total = this.notes.length;
         const completed = this.notes.filter(note => note.completed).length;
         const remaining = total - completed;
         return { total, completed, remaining };
     }
 
-    search(query: string) {
+    markAllAsCompleted(): void {
+        this.notes.forEach(note => note.markAsCompleted());
+    }
+}
+
+class SearchableTodoList extends TodoList {
+    search(query: string): INote[] {
         return this.notes.filter(note => note.title.includes(query) || note.content.includes(query));
     }
+}
 
-    sort(by: 'status' | 'createdAt') {
+class SortableTodoList extends TodoList {
+    sort(by: SortBy): INote[] {
         const sorted = [...this.notes];
         if (by === 'status') {
             sorted.sort((a, b) => (a.completed === b.completed ? 0 : a.completed ? 1 : -1));
