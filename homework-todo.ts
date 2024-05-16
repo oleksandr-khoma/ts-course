@@ -53,6 +53,7 @@ interface ITodoList {
     add(title: string, content: string, requiresConfirmation?: boolean): void;
     remove(note: INote): void;
     get(id: number): INote | undefined;
+    getAll(): INote[];
     getStats(): { total: number; completed: number; remaining: number };
     markAllAsCompleted(): void;
 }
@@ -74,6 +75,10 @@ class TodoList implements ITodoList {
 
     get(id: number): INote | undefined {
         return this.notes[id];
+    }
+
+    getAll(): INote[] {
+        return this.notes;
     }
 
     getStats(): { total: number; completed: number; remaining: number } {
